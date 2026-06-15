@@ -138,6 +138,7 @@ const seed = {
       observaciones: "",
     },
   ],
+  configuracion_telegram: [],
 };
 
 export const config = {

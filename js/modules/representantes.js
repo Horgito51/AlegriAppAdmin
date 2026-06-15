@@ -1,5 +1,5 @@
-import { createTableEnhancer } from "./tableEnhancer.js?v=20260615-3";
-import { representantesApi } from "../api/representantesApi.js?v=20260615-3";
+import { createTableEnhancer } from "./tableEnhancer.js?v=20260615-6";
+import { representantesApi } from "../api/representantesApi.js?v=20260615-6";
 
 const CACHE_KEY = "alegriapp-validation-cache:representantes-root";
 const DRAFT_KEY = "alegriapp-form-draft:representantes-root";
@@ -119,6 +119,7 @@ export function createRepresentantesModule({ notify, onChange }) {
     { name: "telefono", label: "Telefono", inputMode: "tel", maxLength: 20, autocomplete: "tel" },
     { name: "telefono_alternativo", label: "Telefono alternativo", inputMode: "tel", maxLength: 20 },
     { name: "email", label: "Correo", type: "email", autocomplete: "email" },
+    { name: "chat_id", label: "Chat ID Telegram" },
     { name: "direccion", label: "Direccion", type: "textarea", autocomplete: "street-address" },
     { name: "ocupacion", label: "Ocupacion" },
     {
@@ -181,7 +182,9 @@ export function createRepresentantesModule({ notify, onChange }) {
               <th>Telefono</th>
               <th>Email</th>
               <th>Ocupacion</th>
+              <th>Chat ID</th>
               <th>Estudiante(s)</th>
+              <th>Estado Telegram</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -246,7 +249,9 @@ export function createRepresentantesModule({ notify, onChange }) {
             <td>${escapeHtml(row.telefono || "-")}</td>
             <td>${escapeHtml(row.email || "-")}</td>
             <td>${escapeHtml(row.ocupacion || "-")}</td>
+            <td>${escapeHtml(row.telegram_chat_id || "-")}</td>
             <td>${escapeHtml(Array.isArray(row.estudiantes) && row.estudiantes.length ? row.estudiantes.join(", ") : "-")}</td>
+            <td><span class="tag">${escapeHtml(row.estadoTelegram || "Sin chat ID")}</span></td>
             <td><span class="tag">${escapeHtml(row.estado)}</span></td>
             <td class="row-actions">
               <button class="icon-button" data-action="edit" data-id="${row.id}">Editar</button>
@@ -274,6 +279,7 @@ export function createRepresentantesModule({ notify, onChange }) {
       telefono: normalizeText(formData.get("telefono")),
       telefono_alternativo: normalizeText(formData.get("telefono_alternativo")),
       email: normalizeEmail(formData.get("email")),
+      chat_id: normalizeText(formData.get("chat_id")),
       direccion: normalizeText(formData.get("direccion")),
       ocupacion: normalizeText(formData.get("ocupacion")),
       estado: normalizeText(formData.get("estado")).toLowerCase(),
@@ -315,6 +321,10 @@ export function createRepresentantesModule({ notify, onChange }) {
 
     if (payload.email && rows.some((row) => sameText(row.email, payload.email))) {
       errors.email = "Ya existe un representante con ese correo.";
+    }
+
+    if (payload.chat_id && rows.some((row) => String(row.telegram_chat_id || "") === payload.chat_id)) {
+      errors.chat_id = "Ya existe un representante con ese chat ID.";
     }
 
     return errors;
@@ -361,7 +371,12 @@ export function createRepresentantesModule({ notify, onChange }) {
   }
 
   function openModal(row = null) {
-    state.editing = row;
+    state.editing = row
+      ? {
+          ...row,
+          chat_id: row.chat_id || row.telegram_chat_id || "",
+        }
+      : null;
     state.draft = row ? {} : readStorage(sessionStorage, DRAFT_KEY, {});
     renderShell();
     bindEvents();
@@ -497,6 +512,7 @@ export function createRepresentantesModule({ notify, onChange }) {
   async function refresh() {
     try {
       setStatus("Cargando...", "loading");
+      await representantesApi.repairTelegramConfigTokens();
       state.rows = await representantesApi.list();
       state.validationCache = state.rows;
       writeStorage(localStorage, CACHE_KEY, { savedAt: new Date().toISOString(), rows: state.rows });

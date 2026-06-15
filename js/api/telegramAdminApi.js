@@ -1,4 +1,4 @@
-import { config } from "./client.js?v=20260615-1";
+import { config } from "./client.js?v=20260615-4";
 
 function resolveApiBaseUrl() {
   // Prefer the module `config` (exported by ./client.js). If está vacío (posible cache o carga global),
