@@ -1,5 +1,5 @@
-import { profesoresApi } from "../api/profesoresApi.js";
-import { createCrudModule } from "./crud.js";
+import { profesoresApi } from "../api/profesoresApi.js?v=20260614-2";
+import { createCrudModule } from "./crud.js?v=20260614-2";
 
 export function createProfesoresModule({ notify, onChange }) {
   return createCrudModule({

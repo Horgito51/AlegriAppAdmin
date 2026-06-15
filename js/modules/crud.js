@@ -1,4 +1,4 @@
-import { createTableEnhancer } from "./tableEnhancer.js";
+import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-2";
 
 export function createCrudModule(options) {
   const state = {

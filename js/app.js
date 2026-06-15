@@ -1,11 +1,11 @@
-import { dataClient, tables } from "./api/client.js";
-import { profesoresApi } from "./api/profesoresApi.js";
-import { cursosApi } from "./api/cursosApi.js";
-import { materiasApi } from "./api/materiasApi.js";
-import { createProfesoresModule } from "./modules/profesores.js";
-import { createCursosModule } from "./modules/cursos.js";
-import { createMateriasModule } from "./modules/materias.js";
-import { createAsignacionesModule } from "./modules/asignaciones.js";
+import { dataClient, tables } from "./api/client.js?v=20260614-2";
+import { profesoresApi } from "./api/profesoresApi.js?v=20260614-2";
+import { cursosApi } from "./api/cursosApi.js?v=20260614-2";
+import { materiasApi } from "./api/materiasApi.js?v=20260614-2";
+import { createProfesoresModule } from "./modules/profesores.js?v=20260614-2";
+import { createCursosModule } from "./modules/cursos.js?v=20260614-2";
+import { createMateriasModule } from "./modules/materias.js?v=20260614-2";
+import { createAsignacionesModule } from "./modules/asignaciones.js?v=20260614-2";
 
 const pageTitle = document.getElementById("page-title");
 const toast = document.getElementById("toast");
@@ -13,6 +13,7 @@ const toast = document.getElementById("toast");
 let toastTimer = null;
 
 function notify(message, type = "neutral") {
+  if (!toast) return;
   clearTimeout(toastTimer);
   toast.textContent = message;
   toast.dataset.type = type;
@@ -30,13 +31,18 @@ async function refreshMetrics() {
       dataClient.list(tables.docenteMateria),
     ]);
 
-    document.getElementById("metric-profesores").textContent = profesores.length;
-    document.getElementById("metric-cursos").textContent = cursos.length;
-    document.getElementById("metric-materias").textContent = materias.length;
-    document.getElementById("metric-asignaciones").textContent = asignacionesCurso.length + asignacionesMateria.length;
+    setMetric("metric-profesores", profesores.length);
+    setMetric("metric-cursos", cursos.length);
+    setMetric("metric-materias", materias.length);
+    setMetric("metric-asignaciones", asignacionesCurso.length + asignacionesMateria.length);
   } catch (error) {
     notify(error.message, "error");
   }
+}
+
+function setMetric(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = value;
 }
 
 const modules = {};
@@ -63,7 +69,7 @@ function showSection(sectionId) {
   });
 
   const section = document.getElementById(sectionId);
-  pageTitle.textContent = section?.dataset.title || "Panel administrativo";
+  if (pageTitle) pageTitle.textContent = section?.dataset.title || "Panel administrativo";
 }
 
 function bindNavigation() {

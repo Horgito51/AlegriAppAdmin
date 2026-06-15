@@ -1,4 +1,4 @@
-import { dataClient, tables } from "./client.js";
+import { dataClient, tables } from "./client.js?v=20260614-2";
 
 const table = tables.profesores;
 
