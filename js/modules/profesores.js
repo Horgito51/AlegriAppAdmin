@@ -1,10 +1,10 @@
-import { profesoresApi } from "../api/profesoresApi.js?v=20260614-2";
-import { createCrudModule } from "./crud.js?v=20260614-2";
+import { profesoresApi } from "../api/profesoresApi.js?v=20260614-4";
+import { createCrudModule } from "./crud.js?v=20260614-4";
 
 export function createProfesoresModule({ notify, onChange }) {
   return createCrudModule({
     rootId: "profesores-root",
-    kicker: "Modulo Jorge",
+    kicker: "Gestion academica",
     title: "Profesores",
     singular: "profesor",
     api: profesoresApi,

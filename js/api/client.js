@@ -17,7 +17,7 @@ const seed = {
   docentes: [
     {
       id: 1,
-      nombres: "Jorge Luis",
+      nombres: "Luis Alberto",
       apellidos: "Molina",
       cedula: "0102030405",
       email: "jorge.molina@colegio.edu.ec",

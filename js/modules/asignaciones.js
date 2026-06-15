@@ -1,8 +1,8 @@
-import { profesoresApi } from "../api/profesoresApi.js?v=20260614-2";
-import { cursosApi } from "../api/cursosApi.js?v=20260614-2";
-import { materiasApi } from "../api/materiasApi.js?v=20260614-2";
-import { dataClient, tables } from "../api/client.js?v=20260614-2";
-import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-2";
+import { profesoresApi } from "../api/profesoresApi.js?v=20260614-4";
+import { cursosApi } from "../api/cursosApi.js?v=20260614-4";
+import { materiasApi } from "../api/materiasApi.js?v=20260614-4";
+import { dataClient, tables } from "../api/client.js?v=20260614-4";
+import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-4";
 
 const docenteCursoTable = tables.docenteCurso;
 const docenteMateriaTable = tables.docenteMateria;
@@ -63,7 +63,7 @@ export function createAsignacionesModule({ notify, onChange }) {
     root.innerHTML = `
       <div class="module-header">
         <div>
-          <p class="eyebrow">Modulo Jorge</p>
+          <p class="eyebrow">Gestion academica</p>
           <h2>Asignaciones</h2>
           <span data-status class="status-text">Listo</span>
         </div>

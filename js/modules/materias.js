@@ -1,10 +1,10 @@
-import { materiasApi } from "../api/materiasApi.js?v=20260614-2";
-import { createCrudModule } from "./crud.js?v=20260614-2";
+import { materiasApi } from "../api/materiasApi.js?v=20260614-4";
+import { createCrudModule } from "./crud.js?v=20260614-4";
 
 export function createMateriasModule({ notify, onChange }) {
   return createCrudModule({
     rootId: "materias-root",
-    kicker: "Modulo Jorge",
+    kicker: "Gestion academica",
     title: "Materias",
     singular: "materia",
     api: materiasApi,
