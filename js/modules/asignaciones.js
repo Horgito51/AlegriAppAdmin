@@ -1,10 +1,37 @@
-import { profesoresApi } from "../api/profesoresApi.js?v=20260614-8";
-import { cursosApi } from "../api/cursosApi.js?v=20260614-8";
-import { materiasApi } from "../api/materiasApi.js?v=20260614-8";
-import { dataClient, tables } from "../api/client.js?v=20260614-8";
-import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-8";
+import { profesoresApi } from "../api/profesoresApi.js?v=20260615-1";
+import { cursosApi } from "../api/cursosApi.js?v=20260615-1";
+import { materiasApi } from "../api/materiasApi.js?v=20260615-1";
+import { dataClient, tables } from "../api/client.js?v=20260615-1";
+import { createTableEnhancer } from "./tableEnhancer.js?v=20260615-1";
 
 const docenteCursoTable = tables.docenteCurso;
+const CACHE_KEY = "alegriapp-validation-cache:asignaciones-root";
+const DRAFT_KEY = "alegriapp-form-draft:asignaciones-root";
+
+function readStorage(storage, key, fallback) {
+  try {
+    const value = storage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStorage(storage, key, value) {
+  try {
+    storage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage support is optional; current state still validates the form.
+  }
+}
+
+function removeStorage(storage, key) {
+  try {
+    storage.removeItem(key);
+  } catch {
+    // Ignore cleanup failures.
+  }
+}
 
 export function createAsignacionesModule({ notify, onChange }) {
   const state = {
@@ -12,6 +39,9 @@ export function createAsignacionesModule({ notify, onChange }) {
     cursos: [],
     materias: [],
     docenteCurso: [],
+    loaded: false,
+    validationCache: [],
+    draft: readStorage(sessionStorage, DRAFT_KEY, {}),
   };
 
   const root = document.getElementById("asignaciones-root");
@@ -42,8 +72,11 @@ export function createAsignacionesModule({ notify, onChange }) {
     }));
   }
 
-  function optionList(rows, formatter) {
-    return rows.map((row) => `<option value="${row.id}">${formatter(row)}</option>`).join("");
+  function optionList(rows, formatter, selectedValues = []) {
+    const selected = selectedValues.map(String);
+    return rows
+      .map((row) => `<option value="${row.id}" ${selected.includes(String(row.id)) ? "selected" : ""}>${formatter(row)}</option>`)
+      .join("");
   }
 
   function render() {
@@ -59,32 +92,36 @@ export function createAsignacionesModule({ notify, onChange }) {
       </div>
 
       <form class="assignment-panel" data-form>
-        <label class="field">
+        <label class="field" data-field="docente_id">
           <span>Profesor</span>
           <select name="docente_id" required>
             <option value="">Seleccione un profesor</option>
-            ${optionList(state.profesores, (row) => `${row.apellidos} ${row.nombres}`)}
+            ${optionList(state.profesores, (row) => `${row.apellidos} ${row.nombres}`, [state.draft.docente_id])}
           </select>
+          <small class="field-error" data-field-error="docente_id"></small>
         </label>
 
-        <label class="field">
+        <label class="field" data-field="curso_ids">
           <span>Cursos</span>
           <select name="curso_ids" multiple size="5">
-            ${optionList(state.cursos, (row) => `${row.nombre} ${row.paralelo} - ${row.periodo_academico || ""}`)}
+            ${optionList(state.cursos, (row) => `${row.nombre} ${row.paralelo} - ${row.periodo_academico || ""}`, state.draft.curso_ids || [])}
           </select>
+          <small class="field-error" data-field-error="curso_ids"></small>
         </label>
 
-        <label class="field">
+        <label class="field" data-field="materia_ids">
           <span>Materias</span>
           <select name="materia_ids" multiple size="5">
-            ${optionList(state.materias, (row) => `${row.nombre} - ${row.curso}`)}
+            ${optionList(state.materias, (row) => `${row.nombre} - ${row.curso}`, state.draft.materia_ids || [])}
           </select>
+          <small class="field-error" data-field-error="materia_ids"></small>
         </label>
 
         <div class="assignment-actions">
           <button class="primary-button" type="submit">Guardar asignaciones</button>
           <p>Cursos y materias</p>
         </div>
+        <div class="form-error" data-form-error hidden></div>
       </form>
 
       <div class="table-tools">
@@ -143,19 +180,92 @@ export function createAsignacionesModule({ notify, onChange }) {
     return Array.from(select.selectedOptions).map((option) => Number(option.value));
   }
 
+  function assignmentRows() {
+    if (state.loaded) return state.docenteCurso;
+    const rowsById = new Map();
+    [...state.validationCache, ...state.docenteCurso].forEach((row) => {
+      if (row?.id !== undefined && row?.id !== null) rowsById.set(String(row.id), row);
+    });
+    return Array.from(rowsById.values());
+  }
+
+  function clearValidationErrors(form) {
+    form.querySelectorAll("[data-field]").forEach((field) => field.classList.remove("invalid"));
+    form.querySelectorAll("[data-field-error]").forEach((error) => {
+      error.textContent = "";
+    });
+    const formError = form.querySelector("[data-form-error]");
+    if (formError) {
+      formError.textContent = "";
+      formError.hidden = true;
+    }
+  }
+
+  function setValidationErrors(form, errors) {
+    clearValidationErrors(form);
+    Object.entries(errors).forEach(([fieldName, message]) => {
+      if (fieldName === "_form") return;
+      form.querySelector(`[data-field="${fieldName}"]`)?.classList.add("invalid");
+      const fieldError = form.querySelector(`[data-field-error="${fieldName}"]`);
+      if (fieldError) fieldError.textContent = message;
+    });
+
+    const formError = form.querySelector("[data-form-error]");
+    if (formError && errors._form) {
+      formError.textContent = errors._form;
+      formError.hidden = false;
+    }
+
+    form.querySelector(".field.invalid select")?.focus();
+  }
+
+  function persistDraft(form) {
+    state.draft = {
+      docente_id: new FormData(form).get("docente_id") || "",
+      curso_ids: selectedValues(form.elements.curso_ids),
+      materia_ids: selectedValues(form.elements.materia_ids),
+    };
+    writeStorage(sessionStorage, DRAFT_KEY, state.draft);
+  }
+
+  function validateAssignment(docenteId, cursoIds, materiaIds) {
+    const errors = {};
+    const rows = assignmentRows();
+
+    if (!docenteId) errors.docente_id = "Seleccione un profesor.";
+    if (!cursoIds.length && !materiaIds.length) {
+      errors._form = "Seleccione al menos un curso o una materia.";
+    }
+
+    const duplicateCursos = cursoIds.filter((cursoId) =>
+      rows.some((row) => Number(row.docente_id) === docenteId && Number(row.curso_id) === cursoId && !row.materia_id)
+    );
+    const duplicateMaterias = materiaIds.filter((materiaId) =>
+      rows.some((row) => Number(row.docente_id) === docenteId && Number(row.materia_id) === materiaId)
+    );
+
+    if (duplicateCursos.length) {
+      errors.curso_ids = "Uno o mas cursos seleccionados ya estan asignados a ese profesor.";
+    }
+    if (duplicateMaterias.length) {
+      errors.materia_ids = "Una o mas materias seleccionadas ya estan asignadas a ese profesor.";
+    }
+
+    return errors;
+  }
+
   async function save(event) {
     event.preventDefault();
     const form = event.currentTarget;
     const docenteId = Number(new FormData(form).get("docente_id"));
     const cursoIds = selectedValues(form.elements.curso_ids);
     const materiaIds = selectedValues(form.elements.materia_ids);
+    const validationErrors = validateAssignment(docenteId, cursoIds, materiaIds);
 
-    if (!docenteId) {
-      notify("Seleccione un profesor.", "error");
-      return;
-    }
-    if (!cursoIds.length && !materiaIds.length) {
-      notify("Seleccione al menos un curso o una materia.", "error");
+    if (Object.keys(validationErrors).length) {
+      setValidationErrors(form, validationErrors);
+      setStatus("Corrige los campos marcados.", "error");
+      notify("Revisa las validaciones del formulario.", "error");
       return;
     }
 
@@ -172,6 +282,8 @@ export function createAsignacionesModule({ notify, onChange }) {
     const newMateriaIds = materiaIds.filter((materiaId) => !duplicateMaterias.includes(materiaId));
 
     if (!newCursoIds.length && !newMateriaIds.length) {
+      setValidationErrors(form, { _form: "Las asignaciones seleccionadas ya existen." });
+      setStatus("Corrige los campos marcados.", "error");
       notify("Las asignaciones seleccionadas ya existen.", "error");
       return;
     }
@@ -194,6 +306,8 @@ export function createAsignacionesModule({ notify, onChange }) {
       ]);
       notify("Asignaciones guardadas.", "success");
       form.reset();
+      state.draft = {};
+      removeStorage(sessionStorage, DRAFT_KEY);
       await refresh();
       onChange?.();
     } catch (error) {
@@ -225,7 +339,16 @@ export function createAsignacionesModule({ notify, onChange }) {
   }
 
   function bindEvents() {
-    root.querySelector("[data-form]").addEventListener("submit", save);
+    const form = root.querySelector("[data-form]");
+    form.addEventListener("submit", save);
+    form.addEventListener("input", () => {
+      clearValidationErrors(form);
+      persistDraft(form);
+    });
+    form.addEventListener("change", () => {
+      clearValidationErrors(form);
+      persistDraft(form);
+    });
     root.onclick = (event) => {
       const button = event.target.closest("[data-action]");
       if (!button) return;
@@ -254,6 +377,12 @@ export function createAsignacionesModule({ notify, onChange }) {
       state.cursos = cursos;
       state.materias = materias;
       state.docenteCurso = docenteCurso;
+      state.loaded = true;
+      state.validationCache = docenteCurso;
+      writeStorage(localStorage, CACHE_KEY, {
+        savedAt: new Date().toISOString(),
+        rows: docenteCurso,
+      });
       render();
       setStatus("Datos actualizados", "success");
       return allAssignments();
@@ -265,6 +394,7 @@ export function createAsignacionesModule({ notify, onChange }) {
   }
 
   function init() {
+    state.validationCache = readStorage(localStorage, CACHE_KEY, { rows: [] }).rows || [];
     render();
     return refresh();
   }

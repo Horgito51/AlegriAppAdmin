@@ -1,5 +1,9 @@
-import { materiasApi } from "../api/materiasApi.js?v=20260614-8";
-import { createCrudModule } from "./crud.js?v=20260614-8";
+import { materiasApi } from "../api/materiasApi.js?v=20260615-1";
+import { createCrudModule } from "./crud.js?v=20260615-1";
+
+function normalized(value) {
+  return String(value || "").trim().toLowerCase();
+}
 
 export function createMateriasModule({ notify, onChange }) {
   return createCrudModule({
@@ -10,6 +14,18 @@ export function createMateriasModule({ notify, onChange }) {
     api: materiasApi,
     notify,
     onChange,
+    validate({ payload, cachedRows, editing }) {
+      const duplicate = cachedRows.some(
+        (row) =>
+          Number(row.id) !== Number(editing?.id) &&
+          Number(row.curso_id) === Number(payload.curso_id) &&
+          normalized(row.nombre) === normalized(payload.nombre)
+      );
+
+      return duplicate
+        ? { nombre: "Ya existe una materia con ese nombre en el curso seleccionado." }
+        : {};
+    },
     async loadFieldOptions() {
       const { cursos } = await materiasApi.catalogs();
       return {

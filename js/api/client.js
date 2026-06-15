@@ -185,11 +185,33 @@ function normalizeSupabaseUrl(url) {
 async function parseResponse(response) {
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || response.statusText);
+    throw new Error(formatApiError(text, response.statusText));
   }
   if (response.status === 204) return [];
   const text = await response.text();
   return text ? JSON.parse(text) : [];
+}
+
+function formatApiError(text, fallback) {
+  if (!text) return fallback || "No se pudo completar la operacion.";
+
+  try {
+    const error = JSON.parse(text);
+    const details = `${error.message || ""} ${error.details || ""}`.toLowerCase();
+
+    if (error.code === "23505") {
+      if (details.includes("email")) return "Ya existe un registro con ese correo.";
+      if (details.includes("cedula")) return "Ya existe un registro con esa cedula.";
+      return "Ya existe un registro con esos datos.";
+    }
+
+    if (error.code === "23503") return "El registro esta relacionado con otros datos y no se puede guardar asi.";
+    if (error.code === "42501") return "No tienes permisos para realizar esta accion.";
+
+    return error.message || fallback || "No se pudo completar la operacion.";
+  } catch {
+    return text || fallback || "No se pudo completar la operacion.";
+  }
 }
 
 function buildSupabaseClient() {

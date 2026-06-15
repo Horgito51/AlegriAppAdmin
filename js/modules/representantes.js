@@ -1,6 +1,6 @@
-import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-8";
-import { representantesApi } from "../api/representantesApi.js?v=20260614-8";
-import { telegramAdminApi } from "../api/telegramAdminApi.js?v=20260614-8";
+import { createTableEnhancer } from "./tableEnhancer.js?v=20260615-1";
+import { representantesApi } from "../api/representantesApi.js?v=20260615-1";
+import { telegramAdminApi } from "../api/telegramAdminApi.js?v=20260615-1";
 
 export function createRepresentantesModule({ notify, onChange }) {
   const root = document.getElementById("representantes-root");

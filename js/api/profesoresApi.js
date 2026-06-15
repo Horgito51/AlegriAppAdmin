@@ -1,4 +1,4 @@
-import { dataClient, tables } from "./client.js?v=20260614-8";
+import { dataClient, tables } from "./client.js?v=20260615-1";
 
 const usuariosTable = tables.profesores;
 const rolesTable = tables.roles;
@@ -95,10 +95,10 @@ export const profesoresApi = {
       await savePersonal(usuario.id, payload.cedula);
       return normalize({ ...usuario, personal_autorizado: payload.cedula ? [{ cedula: payload.cedula }] : [] });
     } catch (err) {
-      // Mejor mensaje de error para el usuario: suele ser RLS en Supabase o falta de REST proxy.
       const msg = err?.message || String(err);
+      if (msg.startsWith("Ya existe")) throw new Error(msg);
       throw new Error(
-        `No fue posible crear el profesor: ${msg}. Si estás usando Supabase, revisa las políticas RLS o configura un endpoint REST seguro.`
+        `No fue posible crear el profesor: ${msg}. Si usas Supabase, revisa las politicas RLS o configura un endpoint REST seguro.`
       );
     }
   },

@@ -1,13 +1,13 @@
-import { dataClient, tables } from "./api/client.js?v=20260614-8";
-import { profesoresApi } from "./api/profesoresApi.js?v=20260614-8";
-import { cursosApi } from "./api/cursosApi.js?v=20260614-8";
-import { materiasApi } from "./api/materiasApi.js?v=20260614-8";
-import { createProfesoresModule } from "./modules/profesores.js?v=20260614-8";
-import { createCursosModule } from "./modules/cursos.js?v=20260614-8";
-import { createMateriasModule } from "./modules/materias.js?v=20260614-8";
-import { createAsignacionesModule } from "./modules/asignaciones.js?v=20260614-8";
-import { createRepresentantesModule } from "./modules/representantes.js?v=20260614-8";
-import { createEstudiantesModule } from "./modules/estudiantes.js?v=20260614-8";
+import { dataClient, tables } from "./api/client.js?v=20260615-1";
+import { profesoresApi } from "./api/profesoresApi.js?v=20260615-1";
+import { cursosApi } from "./api/cursosApi.js?v=20260615-1";
+import { materiasApi } from "./api/materiasApi.js?v=20260615-1";
+import { createProfesoresModule } from "./modules/profesores.js?v=20260615-1";
+import { createCursosModule } from "./modules/cursos.js?v=20260615-1";
+import { createMateriasModule } from "./modules/materias.js?v=20260615-1";
+import { createAsignacionesModule } from "./modules/asignaciones.js?v=20260615-1";
+import { createRepresentantesModule } from "./modules/representantes.js?v=20260615-1";
+import { createEstudiantesModule } from "./modules/estudiantes.js?v=20260615-1";
 
 const pageTitle = document.getElementById("page-title");
 const toast = document.getElementById("toast");

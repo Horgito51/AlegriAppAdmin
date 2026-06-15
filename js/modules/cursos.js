@@ -1,5 +1,9 @@
-import { cursosApi } from "../api/cursosApi.js?v=20260614-8";
-import { createCrudModule } from "./crud.js?v=20260614-8";
+import { cursosApi } from "../api/cursosApi.js?v=20260615-1";
+import { createCrudModule } from "./crud.js?v=20260615-1";
+
+function normalized(value) {
+  return String(value || "").trim().toLowerCase();
+}
 
 export function createCursosModule({ notify, onChange }) {
   return createCrudModule({
@@ -10,6 +14,27 @@ export function createCursosModule({ notify, onChange }) {
     api: cursosApi,
     notify,
     onChange,
+    validate({ payload, cachedRows, editing }) {
+      const errors = {};
+      const anio = String(payload.anio_lectivo || "");
+      const duplicate = cachedRows.some(
+        (row) =>
+          Number(row.id) !== Number(editing?.id) &&
+          normalized(row.nombre) === normalized(payload.nombre) &&
+          normalized(row.paralelo) === normalized(payload.paralelo) &&
+          normalized(row.anio_lectivo) === normalized(payload.anio_lectivo)
+      );
+
+      if (anio && !/^\d{4}(-\d{4})?$/.test(anio)) {
+        errors.anio_lectivo = "Use un anio como 2026 o un periodo como 2026-2027.";
+      }
+
+      if (duplicate) {
+        errors._form = "Ya existe un curso con el mismo nombre, paralelo y anio lectivo.";
+      }
+
+      return errors;
+    },
     async loadFieldOptions() {
       const { niveles, periodos } = await cursosApi.catalogs();
       return {
