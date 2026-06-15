@@ -2,6 +2,7 @@ const DEFAULT_CONFIG = {
   dataMode: "demo",
   supabase: { url: "", anonKey: "" },
   rest: { baseUrl: "" },
+  currentUserId: null,
   tables: {
     profesores: "usuarios",
     roles: "roles",
@@ -11,6 +12,12 @@ const DEFAULT_CONFIG = {
     docenteCurso: "docente_curso",
     nivelesAcademicos: "niveles_academicos",
     periodosAcademicos: "periodos_academicos",
+    representantes: "representantes",
+    estudiantes: "estudiantes",
+    estudianteCurso: "estudiante_curso",
+    estudianteRepresentante: "estudiante_representante",
+    tiposRelacionRepresentante: "tipos_relacion_representante",
+    configuracionTelegram: "configuracion_telegram",
   },
 };
 
@@ -76,6 +83,61 @@ const seed = {
     },
   ],
   docente_curso: [{ id: 1, docente_id: 1, curso_id: 1 }],
+  representantes: [
+    {
+      id: 1,
+      nombre: "Maria Elena",
+      apellido: "Vega",
+      cedula: "0912345678",
+      telefono: "0998765432",
+      telefono_alternativo: "022334455",
+      email: "maria.vega@example.com",
+      direccion: "Av. Principal 123",
+      ocupacion: "Comerciante",
+      estado: "activo",
+    },
+  ],
+  estudiantes: [
+    {
+      id: 1,
+      codigo_institucional: "EST-001",
+      nombre: "Sofia",
+      apellido: "Mena",
+      cedula: "0950011223",
+      fecha_nacimiento: "2013-04-12",
+      genero: "F",
+      direccion: "Cdla. Las Palmas",
+      fotografia: "",
+      estado: "activo",
+      observaciones: "",
+    },
+  ],
+  estudiante_curso: [
+    {
+      id: 1,
+      estudiante_id: 1,
+      curso_id: 1,
+      fecha_inscripcion: "2026-04-01T00:00:00.000Z",
+      estado: "activo",
+      observaciones: "",
+    },
+  ],
+  tipos_relacion_representante: [
+    { id: 1, nombre: "Madre", estado: "activo" },
+    { id: 2, nombre: "Padre", estado: "activo" },
+    { id: 3, nombre: "Tutor", estado: "activo" },
+    { id: 4, nombre: "Familiar", estado: "activo" },
+  ],
+  estudiante_representante: [
+    {
+      id: 1,
+      estudiante_id: 1,
+      representante_id: 1,
+      tipo_relacion_id: 1,
+      es_principal: true,
+      observaciones: "",
+    },
+  ],
 };
 
 export const config = {

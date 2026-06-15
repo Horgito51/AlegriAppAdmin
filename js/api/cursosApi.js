@@ -1,6 +1,23 @@
-import { dataClient, tables } from "./client.js?v=20260615-1";
+import { dataClient, tables } from "./client.js?v=20260615-2";
 
 const table = tables.cursos;
+
+async function fetchCursos(paramsWithDeletedAt, fallbackParams) {
+  try {
+    return await dataClient.request(table, { params: paramsWithDeletedAt });
+  } catch {
+    try {
+      return await dataClient.request(table, { params: fallbackParams });
+    } catch {
+      return dataClient.request(table, {
+        params: {
+          select: "id,nombre,paralelo,anio_lectivo,nivel_academico_id,periodo_academico_id,estado",
+          order: "nombre.asc,paralelo.asc",
+        },
+      });
+    }
+  }
+}
 
 function normalize(row) {
   const periodo = row.periodos_academicos;
@@ -31,13 +48,17 @@ export const cursosApi = {
   },
 
   async list() {
-    const rows = await dataClient.request(table, {
-      params: {
+    const rows = await fetchCursos(
+      {
         select: "id,nombre,paralelo,anio_lectivo,nivel_academico_id,periodo_academico_id,estado,deleted_at,niveles_academicos(nombre),periodos_academicos(nombre,anio_lectivo)",
         deleted_at: "is.null",
         order: "nombre.asc,paralelo.asc",
       },
-    });
+      {
+        select: "id,nombre,paralelo,anio_lectivo,nivel_academico_id,periodo_academico_id,estado,niveles_academicos(nombre),periodos_academicos(nombre,anio_lectivo)",
+        order: "nombre.asc,paralelo.asc",
+      }
+    );
     return rows.map(normalize);
   },
 

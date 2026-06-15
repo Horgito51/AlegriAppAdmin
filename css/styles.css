@@ -351,6 +351,25 @@ h2 {
   font-weight: 600;
 }
 
+.table-tools-filters {
+  flex-wrap: wrap;
+}
+
+.table-tools-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.compact-field {
+  min-width: min(320px, 100%);
+}
+
+.compact-field span {
+  font-size: 0.76rem;
+}
+
 .field {
   display: grid;
   gap: 7px;
@@ -453,6 +472,10 @@ th {
   font-size: 0.9rem;
 }
 
+.table-count[data-empty-message]:not([data-empty-message=""])::after {
+  content: " " attr(data-empty-message);
+}
+
 .datatable-wrapper {
   padding: 0;
 }
@@ -471,6 +494,13 @@ th {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.datatable-dropdown label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
 }
 
 .datatable-input,
@@ -546,6 +576,10 @@ th {
   box-shadow: 0 28px 90px rgba(17, 24, 22, 0.28);
 }
 
+.admin-dialog-wide {
+  width: min(1080px, calc(100vw - 24px));
+}
+
 .admin-dialog::backdrop {
   background: rgba(17, 24, 22, 0.48);
 }
@@ -576,6 +610,145 @@ th {
 
 .field:has(textarea) {
   grid-column: 1 / -1;
+}
+
+.relation-section {
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 18px;
+}
+
+.relation-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.relation-section-header h3 {
+  margin-bottom: 0;
+}
+
+.relation-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.relation-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+.relation-toolbar-action {
+  display: flex;
+  align-items: flex-end;
+}
+
+.selected-relations-list {
+  display: grid;
+  gap: 12px;
+}
+
+.selected-relation-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) minmax(160px, 0.8fr) minmax(160px, 0.8fr) minmax(220px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+}
+
+.selected-relation-summary strong,
+.selected-relation-summary span {
+  display: block;
+}
+
+.selected-relation-summary span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.selected-relation-actions {
+  display: flex;
+  align-items: end;
+}
+
+.relation-main-button.is-primary {
+  border-color: var(--primary);
+  background: var(--sky-soft);
+  color: var(--primary);
+}
+
+.relation-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+}
+
+.relation-card.selected {
+  border-color: rgba(0, 119, 182, 0.35);
+  background: var(--sky-soft);
+}
+
+.relation-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.relation-card-header strong,
+.relation-card-header span {
+  display: block;
+}
+
+.relation-card-header span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.relation-card-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.relation-note {
+  grid-column: 1 / -1;
+}
+
+.principal-toggle {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px 12px;
+}
+
+.principal-toggle span {
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.muted-block {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .assignment-panel {
@@ -684,7 +857,8 @@ th {
   .dialog-actions,
   .datatable-top,
   .datatable-bottom,
-  .board-main {
+  .board-main,
+  .relation-section-header {
     align-items: stretch;
     flex-direction: column;
   }
@@ -695,7 +869,11 @@ th {
   .assignment-panel,
   .quick-actions,
   .nav-list,
-  .nav-group {
+  .nav-group,
+  .relation-cards,
+  .relation-card-body,
+  .relation-toolbar,
+  .selected-relation-row {
     grid-template-columns: 1fr;
   }
 

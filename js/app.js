@@ -1,13 +1,13 @@
-import { dataClient, tables } from "./api/client.js?v=20260615-1";
-import { profesoresApi } from "./api/profesoresApi.js?v=20260615-1";
-import { cursosApi } from "./api/cursosApi.js?v=20260615-1";
-import { materiasApi } from "./api/materiasApi.js?v=20260615-1";
-import { createProfesoresModule } from "./modules/profesores.js?v=20260615-1";
-import { createCursosModule } from "./modules/cursos.js?v=20260615-1";
-import { createMateriasModule } from "./modules/materias.js?v=20260615-1";
-import { createAsignacionesModule } from "./modules/asignaciones.js?v=20260615-1";
-import { createRepresentantesModule } from "./modules/representantes.js?v=20260615-1";
-import { createEstudiantesModule } from "./modules/estudiantes.js?v=20260615-1";
+import { dataClient, tables } from "./api/client.js?v=20260615-3";
+import { profesoresApi } from "./api/profesoresApi.js?v=20260615-3";
+import { cursosApi } from "./api/cursosApi.js?v=20260615-3";
+import { materiasApi } from "./api/materiasApi.js?v=20260615-3";
+import { createProfesoresModule } from "./modules/profesores.js?v=20260615-3";
+import { createCursosModule } from "./modules/cursos.js?v=20260615-3";
+import { createMateriasModule } from "./modules/materias.js?v=20260615-3";
+import { createAsignacionesModule } from "./modules/asignaciones.js?v=20260615-3";
+import { createRepresentantesModule } from "./modules/representantes.js?v=20260615-3";
+import { createEstudiantesModule } from "./modules/estudiantes.js?v=20260615-3";
 
 const pageTitle = document.getElementById("page-title");
 const toast = document.getElementById("toast");
@@ -17,7 +17,7 @@ let toastTimer = null;
 function notify(message, type = "neutral") {
   if (!toast) return;
   clearTimeout(toastTimer);
-  toast.textContent = message;
+  toast.textContent = typeof message === "string" ? message : String(message ?? "");
   toast.dataset.type = type;
   toast.classList.add("show");
   toastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
@@ -90,7 +90,7 @@ function bindNavigation() {
 async function init() {
   buildModules();
   bindNavigation();
-  await Promise.all([
+  const results = await Promise.allSettled([
     modules.profesores.init(),
     modules.cursos.init(),
     modules.materias.init(),
@@ -98,6 +98,9 @@ async function init() {
     modules.representantes.init(),
     modules.estudiantes.init(),
   ]);
+
+  const failed = results.find((result) => result.status === "rejected");
+  if (failed?.reason) notify(failed.reason.message || String(failed.reason), "error");
   await refreshMetrics();
 }
 

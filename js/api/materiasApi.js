@@ -1,6 +1,25 @@
-import { dataClient, tables } from "./client.js?v=20260615-1";
+import { dataClient, tables } from "./client.js?v=20260615-2";
 
 const table = tables.materias;
+
+async function requestWithFallback(targetTable, paramsWithDeletedAt, fallbackParams) {
+  try {
+    return await dataClient.request(targetTable, { params: paramsWithDeletedAt });
+  } catch {
+    try {
+      return await dataClient.request(targetTable, { params: fallbackParams });
+    } catch {
+      return dataClient.request(targetTable, {
+        params: {
+          select: targetTable === tables.cursos
+            ? "id,nombre,paralelo,anio_lectivo,estado"
+            : "id,nombre,descripcion,curso_id,docente_id,estado",
+          order: "nombre.asc",
+        },
+      });
+    }
+  }
+}
 
 function normalize(row) {
   const curso = row.cursos;
@@ -17,24 +36,34 @@ function normalize(row) {
 
 export const materiasApi = {
   async catalogs() {
-    const cursos = await dataClient.request(tables.cursos, {
-      params: {
-        select: "id,nombre,paralelo,anio_lectivo,estado",
+    const cursos = await requestWithFallback(
+      tables.cursos,
+      {
+        select: "id,nombre,paralelo,anio_lectivo,estado,deleted_at",
         deleted_at: "is.null",
         order: "nombre.asc,paralelo.asc",
       },
-    });
+      {
+        select: "id,nombre,paralelo,anio_lectivo,estado",
+        order: "nombre.asc,paralelo.asc",
+      }
+    );
     return { cursos };
   },
 
   async list() {
-    const rows = await dataClient.request(table, {
-      params: {
+    const rows = await requestWithFallback(
+      table,
+      {
         select: "id,nombre,descripcion,curso_id,docente_id,estado,deleted_at,cursos(nombre,paralelo,anio_lectivo)",
         deleted_at: "is.null",
         order: "nombre.asc",
       },
-    });
+      {
+        select: "id,nombre,descripcion,curso_id,docente_id,estado,cursos(nombre,paralelo,anio_lectivo)",
+        order: "nombre.asc",
+      }
+    );
     return rows.map(normalize);
   },
 
