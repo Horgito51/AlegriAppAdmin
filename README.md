@@ -11,7 +11,7 @@ Aplicacion web administrativa hecha con HTML5, CSS3 y JavaScript modular puro. E
 
 ## Modulos preparados para el equipo
 
-- Representantes.
+- Representantes: lista de representantes con estado de vinculación de Telegram, generación de enlaces seguros y prueba de envío.
 - Estudiantes.
 - Periodos academicos y ajustes LOEI.
 - Configuracion Telegram.
@@ -35,6 +35,8 @@ El archivo activo es `js/config.js`. Usa la URL real de Supabase y una publishab
 ```js
 dataMode: "supabase"
 ```
+
+Para la nueva integración de Telegram, `rest.baseUrl` debe apuntar a un servidor que implemente los endpoints `/telegram/link`, `/telegram/test` y `/webhook/telegram`.
 
 Las tablas usadas por el panel son las mismas del proyecto Kotlin:
 

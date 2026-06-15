@@ -6,6 +6,8 @@ import { createProfesoresModule } from "./modules/profesores.js?v=20260614-8";
 import { createCursosModule } from "./modules/cursos.js?v=20260614-8";
 import { createMateriasModule } from "./modules/materias.js?v=20260614-8";
 import { createAsignacionesModule } from "./modules/asignaciones.js?v=20260614-8";
+import { createRepresentantesModule } from "./modules/representantes.js?v=20260614-8";
+import { createEstudiantesModule } from "./modules/estudiantes.js?v=20260614-8";
 
 const pageTitle = document.getElementById("page-title");
 const toast = document.getElementById("toast");
@@ -58,6 +60,8 @@ function buildModules() {
   modules.cursos = createCursosModule({ notify, onChange });
   modules.materias = createMateriasModule({ notify, onChange });
   modules.asignaciones = createAsignacionesModule({ notify, onChange: refreshMetrics });
+  modules.representantes = createRepresentantesModule({ notify, onChange: refreshMetrics });
+  modules.estudiantes = createEstudiantesModule({ notify, onChange });
 }
 
 function showSection(sectionId) {
@@ -91,6 +95,8 @@ async function init() {
     modules.cursos.init(),
     modules.materias.init(),
     modules.asignaciones.init(),
+    modules.representantes.init(),
+    modules.estudiantes.init(),
   ]);
   await refreshMetrics();
 }

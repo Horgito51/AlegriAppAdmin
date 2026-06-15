@@ -79,20 +79,28 @@ export const profesoresApi = {
 
   async create(payload) {
     const roleId = await getDocenteRoleId();
-    const [usuario] = await dataClient.request(usuariosTable, {
-      method: "POST",
-      body: {
-        nombre: payload.nombres,
-        apellido: payload.apellidos,
-        email: payload.email,
-        telefono: payload.telefono || null,
-        rol_id: roleId,
-        estado: payload.estado || "activo",
-        password_hash: `panel_admin_${Date.now()}`,
-      },
-    });
-    await savePersonal(usuario.id, payload.cedula);
-    return normalize({ ...usuario, personal_autorizado: payload.cedula ? [{ cedula: payload.cedula }] : [] });
+    try {
+      const [usuario] = await dataClient.request(usuariosTable, {
+        method: "POST",
+        body: {
+          nombre: payload.nombres,
+          apellido: payload.apellidos,
+          email: payload.email,
+          telefono: payload.telefono || null,
+          rol_id: roleId,
+          estado: payload.estado || "activo",
+          password_hash: `panel_admin_${Date.now()}`,
+        },
+      });
+      await savePersonal(usuario.id, payload.cedula);
+      return normalize({ ...usuario, personal_autorizado: payload.cedula ? [{ cedula: payload.cedula }] : [] });
+    } catch (err) {
+      // Mejor mensaje de error para el usuario: suele ser RLS en Supabase o falta de REST proxy.
+      const msg = err?.message || String(err);
+      throw new Error(
+        `No fue posible crear el profesor: ${msg}. Si estás usando Supabase, revisa las políticas RLS o configura un endpoint REST seguro.`
+      );
+    }
   },
 
   async update(id, payload) {
