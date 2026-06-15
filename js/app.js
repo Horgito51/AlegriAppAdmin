@@ -1,11 +1,11 @@
-import { dataClient, tables } from "./api/client.js?v=20260614-7";
-import { profesoresApi } from "./api/profesoresApi.js?v=20260614-7";
-import { cursosApi } from "./api/cursosApi.js?v=20260614-7";
-import { materiasApi } from "./api/materiasApi.js?v=20260614-7";
-import { createProfesoresModule } from "./modules/profesores.js?v=20260614-7";
-import { createCursosModule } from "./modules/cursos.js?v=20260614-7";
-import { createMateriasModule } from "./modules/materias.js?v=20260614-7";
-import { createAsignacionesModule } from "./modules/asignaciones.js?v=20260614-7";
+import { dataClient, tables } from "./api/client.js?v=20260614-8";
+import { profesoresApi } from "./api/profesoresApi.js?v=20260614-8";
+import { cursosApi } from "./api/cursosApi.js?v=20260614-8";
+import { materiasApi } from "./api/materiasApi.js?v=20260614-8";
+import { createProfesoresModule } from "./modules/profesores.js?v=20260614-8";
+import { createCursosModule } from "./modules/cursos.js?v=20260614-8";
+import { createMateriasModule } from "./modules/materias.js?v=20260614-8";
+import { createAsignacionesModule } from "./modules/asignaciones.js?v=20260614-8";
 
 const pageTitle = document.getElementById("page-title");
 const toast = document.getElementById("toast");
