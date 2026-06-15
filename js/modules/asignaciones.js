@@ -2,6 +2,7 @@ import { profesoresApi } from "../api/profesoresApi.js";
 import { cursosApi } from "../api/cursosApi.js";
 import { materiasApi } from "../api/materiasApi.js";
 import { dataClient, tables } from "../api/client.js";
+import { createTableEnhancer } from "./tableEnhancer.js";
 
 const docenteCursoTable = tables.docenteCurso;
 const docenteMateriaTable = tables.docenteMateria;
@@ -13,10 +14,10 @@ export function createAsignacionesModule({ notify, onChange }) {
     materias: [],
     docenteCurso: [],
     docenteMateria: [],
-    query: "",
   };
 
   const root = document.getElementById("asignaciones-root");
+  const tableEnhancer = createTableEnhancer();
 
   function labelProfesor(id) {
     const profesor = state.profesores.find((item) => Number(item.id) === Number(id));
@@ -53,18 +54,12 @@ export function createAsignacionesModule({ notify, onChange }) {
     return [...cursos, ...materias];
   }
 
-  function filteredAssignments() {
-    const query = state.query.trim().toLowerCase();
-    const rows = allAssignments();
-    if (!query) return rows;
-    return rows.filter((row) => JSON.stringify(row).toLowerCase().includes(query));
-  }
-
   function optionList(rows, formatter) {
     return rows.map((row) => `<option value="${row.id}">${formatter(row)}</option>`).join("");
   }
 
   function render() {
+    tableEnhancer.destroy();
     root.innerHTML = `
       <div class="module-header">
         <div>
@@ -100,19 +95,16 @@ export function createAsignacionesModule({ notify, onChange }) {
 
         <div class="assignment-actions">
           <button class="primary-button" type="submit">Guardar asignaciones</button>
-          <p>Puede seleccionar varios cursos y varias materias a la vez.</p>
+          <p>Cursos y materias</p>
         </div>
       </form>
 
       <div class="table-tools">
-        <label class="search-box">
-          <span>Buscar</span>
-          <input data-search type="search" placeholder="Buscar profesor, curso o materia" value="${state.query}" />
-        </label>
+        <span class="table-hint">Registros</span>
       </div>
 
       <div class="table-wrap">
-        <table>
+        <table class="table table-hover align-middle mb-0" data-enhanced-table>
           <thead>
             <tr>
               <th>Profesor</th>
@@ -132,7 +124,8 @@ export function createAsignacionesModule({ notify, onChange }) {
   }
 
   function renderTable() {
-    const rows = filteredAssignments();
+    tableEnhancer.destroy();
+    const rows = allAssignments();
     root.querySelector("[data-table-body]").innerHTML =
       rows
         .map(
@@ -146,9 +139,10 @@ export function createAsignacionesModule({ notify, onChange }) {
               </td>
             </tr>`
         )
-        .join("") || '<tr><td colspan="4" class="empty-row">No hay asignaciones registradas.</td></tr>';
+        .join("");
 
     root.querySelector("[data-count]").textContent = `${rows.length} registro(s)`;
+    tableEnhancer.mount(root.querySelector("[data-enhanced-table]"));
   }
 
   function setStatus(message, type = "neutral") {
@@ -224,10 +218,6 @@ export function createAsignacionesModule({ notify, onChange }) {
 
   function bindEvents() {
     root.querySelector("[data-form]").addEventListener("submit", save);
-    root.querySelector("[data-search]").addEventListener("input", (event) => {
-      state.query = event.target.value;
-      renderTable();
-    });
     root.onclick = (event) => {
       const button = event.target.closest("[data-action]");
       if (!button) return;

@@ -1,22 +1,18 @@
+import { createTableEnhancer } from "./tableEnhancer.js";
+
 export function createCrudModule(options) {
   const state = {
     rows: [],
     editing: null,
-    query: "",
     loading: false,
   };
 
   const root = document.getElementById(options.rootId);
+  const tableEnhancer = createTableEnhancer();
 
   function valueOf(row, column) {
     if (typeof column.value === "function") return column.value(row);
     return row[column.key] ?? "";
-  }
-
-  function filteredRows() {
-    const query = state.query.trim().toLowerCase();
-    if (!query) return state.rows;
-    return state.rows.filter((row) => JSON.stringify(row).toLowerCase().includes(query));
   }
 
   function emptyValue(field) {
@@ -61,7 +57,8 @@ export function createCrudModule(options) {
   }
 
   function renderTable() {
-    const rows = filteredRows();
+    tableEnhancer.destroy();
+    const rows = state.rows;
     const tableRows = rows
       .map(
         (row) => `
@@ -76,12 +73,13 @@ export function createCrudModule(options) {
       .join("");
 
     root.querySelector("[data-table-body]").innerHTML =
-      tableRows ||
-      `<tr><td colspan="${options.columns.length + 1}" class="empty-row">No hay registros para mostrar.</td></tr>`;
+      tableRows;
     root.querySelector("[data-count]").textContent = `${rows.length} registro(s)`;
+    tableEnhancer.mount(root.querySelector("[data-enhanced-table]"));
   }
 
   function renderShell() {
+    tableEnhancer.destroy();
     root.innerHTML = `
       <div class="module-header">
         <div>
@@ -93,15 +91,12 @@ export function createCrudModule(options) {
       </div>
 
       <div class="table-tools">
-        <label class="search-box">
-          <span>Buscar</span>
-          <input data-search type="search" placeholder="Buscar por cualquier campo" />
-        </label>
+        <span class="table-hint">Registros</span>
         <button class="secondary-button" data-action="refresh">Actualizar</button>
       </div>
 
       <div class="table-wrap">
-        <table>
+        <table class="table table-hover align-middle mb-0" data-enhanced-table>
           <thead>
             <tr>
               ${options.columns.map((column) => `<th>${column.label}</th>`).join("")}
@@ -206,11 +201,6 @@ export function createCrudModule(options) {
   }
 
   function bindEvents() {
-    root.querySelector("[data-search]")?.addEventListener("input", (event) => {
-      state.query = event.target.value;
-      renderTable();
-    });
-
     root.querySelector("[data-form]")?.addEventListener("submit", save);
 
     root.onclick = (event) => {

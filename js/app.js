@@ -8,7 +8,6 @@ import { createMateriasModule } from "./modules/materias.js";
 import { createAsignacionesModule } from "./modules/asignaciones.js";
 
 const pageTitle = document.getElementById("page-title");
-const dataMode = document.getElementById("data-mode");
 const toast = document.getElementById("toast");
 
 let toastTimer = null;
@@ -71,10 +70,13 @@ function bindNavigation() {
   document.querySelectorAll(".nav-item").forEach((item) => {
     item.addEventListener("click", () => showSection(item.dataset.section));
   });
+
+  document.querySelectorAll("[data-section-shortcut]").forEach((item) => {
+    item.addEventListener("click", () => showSection(item.dataset.sectionShortcut));
+  });
 }
 
 async function init() {
-  dataMode.textContent = `Modo datos: ${dataClient.modeLabel}`;
   buildModules();
   bindNavigation();
   await Promise.all([
