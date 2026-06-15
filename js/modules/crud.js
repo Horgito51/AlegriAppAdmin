@@ -1,4 +1,4 @@
-import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-4";
+import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-5";
 
 export function createCrudModule(options) {
   const state = {
@@ -108,9 +108,9 @@ export function createCrudModule(options) {
       </div>
       <p class="table-count" data-count>0 registro(s)</p>
 
-      <dialog class="modal" data-modal>
+      <dialog class="admin-dialog" data-modal>
         <form method="dialog" data-form>
-          <div class="modal-header">
+          <div class="dialog-header">
             <div>
               <p class="eyebrow">${options.singular}</p>
               <h3 data-form-title>Nuevo registro</h3>
@@ -120,7 +120,7 @@ export function createCrudModule(options) {
           <div class="form-grid">
             ${options.fields.map(fieldMarkup).join("")}
           </div>
-          <div class="modal-actions">
+          <div class="dialog-actions">
             <button type="button" class="secondary-button" data-action="close">Cancelar</button>
             <button type="submit" class="primary-button">Guardar</button>
           </div>

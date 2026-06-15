@@ -1,5 +1,5 @@
-import { materiasApi } from "../api/materiasApi.js?v=20260614-4";
-import { createCrudModule } from "./crud.js?v=20260614-4";
+import { materiasApi } from "../api/materiasApi.js?v=20260614-5";
+import { createCrudModule } from "./crud.js?v=20260614-5";
 
 export function createMateriasModule({ notify, onChange }) {
   return createCrudModule({

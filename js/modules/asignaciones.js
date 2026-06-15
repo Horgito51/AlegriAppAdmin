@@ -1,8 +1,8 @@
-import { profesoresApi } from "../api/profesoresApi.js?v=20260614-4";
-import { cursosApi } from "../api/cursosApi.js?v=20260614-4";
-import { materiasApi } from "../api/materiasApi.js?v=20260614-4";
-import { dataClient, tables } from "../api/client.js?v=20260614-4";
-import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-4";
+import { profesoresApi } from "../api/profesoresApi.js?v=20260614-5";
+import { cursosApi } from "../api/cursosApi.js?v=20260614-5";
+import { materiasApi } from "../api/materiasApi.js?v=20260614-5";
+import { dataClient, tables } from "../api/client.js?v=20260614-5";
+import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-5";
 
 const docenteCursoTable = tables.docenteCurso;
 const docenteMateriaTable = tables.docenteMateria;

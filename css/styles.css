@@ -579,7 +579,7 @@ th {
   font-weight: 800;
 }
 
-.modal {
+.admin-dialog {
   width: min(760px, calc(100vw - 24px));
   border: 0;
   border-radius: 8px;
@@ -587,23 +587,23 @@ th {
   box-shadow: 0 28px 90px rgba(17, 24, 22, 0.28);
 }
 
-.modal::backdrop {
+.admin-dialog::backdrop {
   background: rgba(17, 24, 22, 0.48);
 }
 
-.modal form {
+.admin-dialog form {
   padding: 22px;
 }
 
-.modal-header,
-.modal-actions {
+.dialog-header,
+.dialog-actions {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.modal-actions {
+.dialog-actions {
   justify-content: flex-end;
   margin-top: 18px;
 }
@@ -721,8 +721,8 @@ th {
   .module-header,
   .table-tools,
   .assignment-actions,
-  .modal-header,
-  .modal-actions,
+  .dialog-header,
+  .dialog-actions,
   .datatable-top,
   .datatable-bottom,
   .board-main {
