@@ -1,0 +1,6 @@
+Supabase URL de prueba:
+https://nqtobrslyrfwcuexffdu.supabase.co
+
+Nota:
+Este archivo solo guarda el URL publico del proyecto. No incluir aqui service_role keys,
+tokens privados de Telegram ni credenciales personales.

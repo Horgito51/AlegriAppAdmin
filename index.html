@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlegriApp | Panel administrativo</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navegacion principal">
+        <div class="brand">
+          <span class="brand-mark">A</span>
+          <div>
+            <strong>AlegriApp</strong>
+            <span>Emprendimiento</span>
+          </div>
+        </div>
+
+        <nav class="nav-list">
+          <button class="nav-item active" data-section="dashboard">Dashboard</button>
+          <button class="nav-item" data-section="profesores">Profesores</button>
+          <button class="nav-item" data-section="cursos">Cursos</button>
+          <button class="nav-item" data-section="materias">Materias</button>
+          <button class="nav-item" data-section="asignaciones">Asignaciones</button>
+        </nav>
+
+        <div class="nav-group">
+          <span>Por completar</span>
+          <button class="nav-item muted" data-section="representantes">Representantes</button>
+          <button class="nav-item muted" data-section="estudiantes">Estudiantes</button>
+          <button class="nav-item muted" data-section="periodos">Periodos academicos</button>
+          <button class="nav-item muted" data-section="telegram">Configuracion Telegram</button>
+          <button class="nav-item muted" data-section="encuesta">Encuesta docente</button>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Panel administrativo</p>
+            <h1 id="page-title">Dashboard</h1>
+          </div>
+          <div class="mode-pill" id="data-mode">Modo datos: cargando</div>
+        </header>
+
+        <section id="dashboard" class="page-section active" data-title="Dashboard">
+          <div class="dashboard-grid">
+            <article class="summary-card">
+              <span>Profesores activos</span>
+              <strong id="metric-profesores">0</strong>
+            </article>
+            <article class="summary-card">
+              <span>Cursos registrados</span>
+              <strong id="metric-cursos">0</strong>
+            </article>
+            <article class="summary-card">
+              <span>Materias disponibles</span>
+              <strong id="metric-materias">0</strong>
+            </article>
+            <article class="summary-card">
+              <span>Asignaciones</span>
+              <strong id="metric-asignaciones">0</strong>
+            </article>
+          </div>
+
+          <div class="workflow">
+            <h2>Flujo administrativo</h2>
+            <ol>
+              <li>Registrar cursos por nivel y periodo.</li>
+              <li>Registrar materias activas.</li>
+              <li>Registrar profesores.</li>
+              <li>Asociar profesores con cursos y materias.</li>
+              <li>Dejar lista la base para estudiantes, representantes y encuesta.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section id="profesores" class="page-section" data-title="Profesores">
+          <div id="profesores-root"></div>
+        </section>
+
+        <section id="cursos" class="page-section" data-title="Cursos">
+          <div id="cursos-root"></div>
+        </section>
+
+        <section id="materias" class="page-section" data-title="Materias">
+          <div id="materias-root"></div>
+        </section>
+
+        <section id="asignaciones" class="page-section" data-title="Asignaciones">
+          <div id="asignaciones-root"></div>
+        </section>
+
+        <section id="representantes" class="page-section placeholder" data-title="Representantes">
+          <h2>Representantes</h2>
+          <p>Espacio preparado para registrar representantes y datos de contacto familiar.</p>
+        </section>
+
+        <section id="estudiantes" class="page-section placeholder" data-title="Estudiantes">
+          <h2>Estudiantes</h2>
+          <p>Espacio preparado para estudiantes, matriculas y asociacion estudiante-representante.</p>
+        </section>
+
+        <section id="periodos" class="page-section placeholder" data-title="Periodos academicos">
+          <h2>Periodos academicos</h2>
+          <p>Espacio preparado para normas LOEI, anios lectivos y periodos activos.</p>
+        </section>
+
+        <section id="telegram" class="page-section placeholder" data-title="Configuracion Telegram">
+          <h2>Configuracion Telegram</h2>
+          <p>Espacio preparado para tokens, chat IDs e integraciones de notificacion.</p>
+        </section>
+
+        <section id="encuesta" class="page-section placeholder" data-title="Encuesta docente">
+          <h2>Encuesta docente</h2>
+          <p>Espacio preparado para activar la encuesta cuando un profesor envie 5 reportes.</p>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="./js/config.js"></script>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
