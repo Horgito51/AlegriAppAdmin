@@ -11,10 +11,13 @@ window.ALEGRIAPP_CONFIG = {
   },
 
   tables: {
-    profesores: "docentes",
+    profesores: "usuarios",
+    roles: "roles",
+    personalAutorizado: "personal_autorizado",
     cursos: "cursos",
     materias: "materias",
     docenteCurso: "docente_curso",
-    docenteMateria: "docente_materia",
+    nivelesAcademicos: "niveles_academicos",
+    periodosAcademicos: "periodos_academicos",
   },
 };

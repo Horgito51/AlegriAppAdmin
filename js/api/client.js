@@ -3,11 +3,14 @@ const DEFAULT_CONFIG = {
   supabase: { url: "", anonKey: "" },
   rest: { baseUrl: "" },
   tables: {
-    profesores: "docentes",
+    profesores: "usuarios",
+    roles: "roles",
+    personalAutorizado: "personal_autorizado",
     cursos: "cursos",
     materias: "materias",
     docenteCurso: "docente_curso",
-    docenteMateria: "docente_materia",
+    nivelesAcademicos: "niveles_academicos",
+    periodosAcademicos: "periodos_academicos",
   },
 };
 
@@ -56,27 +59,23 @@ const seed = {
     {
       id: 1,
       nombre: "Matematica",
-      codigo: "MAT-08",
       descripcion: "Numeros, algebra y resolucion de problemas.",
       estado: "activo",
     },
     {
       id: 2,
       nombre: "Emprendimiento",
-      codigo: "EMP-01",
       descripcion: "Ideas de negocio, validacion y prototipos.",
       estado: "activo",
     },
     {
       id: 3,
       nombre: "Lengua y Literatura",
-      codigo: "LEN-08",
       descripcion: "Lectura critica y expresion escrita.",
       estado: "activo",
     },
   ],
   docente_curso: [{ id: 1, docente_id: 1, curso_id: 1 }],
-  docente_materia: [{ id: 1, docente_id: 1, materia_id: 2 }],
 };
 
 export const config = {
@@ -202,30 +201,38 @@ function buildSupabaseClient() {
     Prefer: "return=representation",
   };
 
+  async function request(table, options = {}) {
+    const params = new URLSearchParams(options.params || {});
+    const query = params.toString();
+    const response = await fetch(`${baseUrl}/${table}${query ? `?${query}` : ""}`, {
+      method: options.method || "GET",
+      headers: { ...headers, ...(options.headers || {}) },
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    });
+    return parseResponse(response);
+  }
+
   return {
     modeLabel: "Supabase REST",
+    request,
     async list(table, options = {}) {
       const params = new URLSearchParams({ select: "*" });
       if (options.order?.length) params.set("order", options.order.join(".asc,") + ".asc");
-      const response = await fetch(`${baseUrl}/${table}?${params.toString()}`, { headers });
-      return parseResponse(response);
+      return request(table, { params });
     },
     async create(table, payload) {
-      const response = await fetch(`${baseUrl}/${table}`, {
+      const rows = await request(table, {
         method: "POST",
-        headers,
-        body: JSON.stringify(payload),
+        body: payload,
       });
-      const rows = await parseResponse(response);
       return Array.isArray(rows) ? rows[0] : rows;
     },
     async update(table, id, payload) {
-      const response = await fetch(`${baseUrl}/${table}?id=eq.${encodeURIComponent(id)}`, {
+      const rows = await request(table, {
         method: "PATCH",
-        headers,
-        body: JSON.stringify({ ...payload, updated_at: new Date().toISOString() }),
+        params: { id: `eq.${id}` },
+        body: { ...payload, updated_at: new Date().toISOString() },
       });
-      const rows = await parseResponse(response);
       return Array.isArray(rows) ? rows[0] : rows;
     },
     async remove(table, id) {

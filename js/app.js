@@ -1,11 +1,11 @@
-import { dataClient, tables } from "./api/client.js?v=20260614-5";
-import { profesoresApi } from "./api/profesoresApi.js?v=20260614-5";
-import { cursosApi } from "./api/cursosApi.js?v=20260614-5";
-import { materiasApi } from "./api/materiasApi.js?v=20260614-5";
-import { createProfesoresModule } from "./modules/profesores.js?v=20260614-5";
-import { createCursosModule } from "./modules/cursos.js?v=20260614-5";
-import { createMateriasModule } from "./modules/materias.js?v=20260614-5";
-import { createAsignacionesModule } from "./modules/asignaciones.js?v=20260614-5";
+import { dataClient, tables } from "./api/client.js?v=20260614-7";
+import { profesoresApi } from "./api/profesoresApi.js?v=20260614-7";
+import { cursosApi } from "./api/cursosApi.js?v=20260614-7";
+import { materiasApi } from "./api/materiasApi.js?v=20260614-7";
+import { createProfesoresModule } from "./modules/profesores.js?v=20260614-7";
+import { createCursosModule } from "./modules/cursos.js?v=20260614-7";
+import { createMateriasModule } from "./modules/materias.js?v=20260614-7";
+import { createAsignacionesModule } from "./modules/asignaciones.js?v=20260614-7";
 
 const pageTitle = document.getElementById("page-title");
 const toast = document.getElementById("toast");
@@ -23,18 +23,19 @@ function notify(message, type = "neutral") {
 
 async function refreshMetrics() {
   try {
-    const [profesores, cursos, materias, asignacionesCurso, asignacionesMateria] = await Promise.all([
+    const [profesores, cursos, materias, asignaciones] = await Promise.all([
       profesoresApi.list(),
       cursosApi.list(),
       materiasApi.list(),
-      dataClient.list(tables.docenteCurso),
-      dataClient.list(tables.docenteMateria),
+      dataClient.request(tables.docenteCurso, {
+        params: { select: "id", deleted_at: "is.null", estado: "eq.activo" },
+      }),
     ]);
 
     setMetric("metric-profesores", profesores.length);
     setMetric("metric-cursos", cursos.length);
     setMetric("metric-materias", materias.length);
-    setMetric("metric-asignaciones", asignacionesCurso.length + asignacionesMateria.length);
+    setMetric("metric-asignaciones", asignaciones.length);
   } catch (error) {
     notify(error.message, "error");
   }

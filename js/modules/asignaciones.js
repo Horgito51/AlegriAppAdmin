@@ -1,11 +1,10 @@
-import { profesoresApi } from "../api/profesoresApi.js?v=20260614-5";
-import { cursosApi } from "../api/cursosApi.js?v=20260614-5";
-import { materiasApi } from "../api/materiasApi.js?v=20260614-5";
-import { dataClient, tables } from "../api/client.js?v=20260614-5";
-import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-5";
+import { profesoresApi } from "../api/profesoresApi.js?v=20260614-7";
+import { cursosApi } from "../api/cursosApi.js?v=20260614-7";
+import { materiasApi } from "../api/materiasApi.js?v=20260614-7";
+import { dataClient, tables } from "../api/client.js?v=20260614-7";
+import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-7";
 
 const docenteCursoTable = tables.docenteCurso;
-const docenteMateriaTable = tables.docenteMateria;
 
 export function createAsignacionesModule({ notify, onChange }) {
   const state = {
@@ -13,7 +12,6 @@ export function createAsignacionesModule({ notify, onChange }) {
     cursos: [],
     materias: [],
     docenteCurso: [],
-    docenteMateria: [],
   };
 
   const root = document.getElementById("asignaciones-root");
@@ -31,27 +29,17 @@ export function createAsignacionesModule({ notify, onChange }) {
 
   function labelMateria(id) {
     const materia = state.materias.find((item) => Number(item.id) === Number(id));
-    return materia ? `${materia.nombre} (${materia.codigo})` : `Materia #${id}`;
+    return materia ? `${materia.nombre} - ${materia.curso}` : `Materia #${id}`;
   }
 
   function allAssignments() {
-    const cursos = state.docenteCurso.map((row) => ({
+    return state.docenteCurso.map((row) => ({
       id: row.id,
       table: docenteCursoTable,
-      tipo: "Curso",
+      tipo: row.materia_id ? "Materia" : "Curso",
       profesor: labelProfesor(row.docente_id),
-      detalle: labelCurso(row.curso_id),
+      detalle: row.materia_id ? labelMateria(row.materia_id) : labelCurso(row.curso_id),
     }));
-
-    const materias = state.docenteMateria.map((row) => ({
-      id: row.id,
-      table: docenteMateriaTable,
-      tipo: "Materia",
-      profesor: labelProfesor(row.docente_id),
-      detalle: labelMateria(row.materia_id),
-    }));
-
-    return [...cursos, ...materias];
   }
 
   function optionList(rows, formatter) {
@@ -89,7 +77,7 @@ export function createAsignacionesModule({ notify, onChange }) {
         <label class="field">
           <span>Materias</span>
           <select name="materia_ids" multiple size="5">
-            ${optionList(state.materias, (row) => `${row.nombre} (${row.codigo})`)}
+            ${optionList(state.materias, (row) => `${row.nombre} - ${row.curso}`)}
           </select>
         </label>
 
@@ -172,10 +160,12 @@ export function createAsignacionesModule({ notify, onChange }) {
     }
 
     const duplicateCursos = cursoIds.filter((cursoId) =>
-      state.docenteCurso.some((row) => Number(row.docente_id) === docenteId && Number(row.curso_id) === cursoId)
+      state.docenteCurso.some(
+        (row) => Number(row.docente_id) === docenteId && Number(row.curso_id) === cursoId && !row.materia_id
+      )
     );
     const duplicateMaterias = materiaIds.filter((materiaId) =>
-      state.docenteMateria.some((row) => Number(row.docente_id) === docenteId && Number(row.materia_id) === materiaId)
+      state.docenteCurso.some((row) => Number(row.docente_id) === docenteId && Number(row.materia_id) === materiaId)
     );
 
     const newCursoIds = cursoIds.filter((cursoId) => !duplicateCursos.includes(cursoId));
@@ -189,8 +179,18 @@ export function createAsignacionesModule({ notify, onChange }) {
     try {
       setStatus("Guardando...", "loading");
       await Promise.all([
-        ...newCursoIds.map((cursoId) => dataClient.create(docenteCursoTable, { docente_id: docenteId, curso_id: cursoId })),
-        ...newMateriaIds.map((materiaId) => dataClient.create(docenteMateriaTable, { docente_id: docenteId, materia_id: materiaId })),
+        ...newCursoIds.map((cursoId) =>
+          dataClient.create(docenteCursoTable, { docente_id: docenteId, curso_id: cursoId, materia_id: null, estado: "activo" })
+        ),
+        ...newMateriaIds.map((materiaId) => {
+          const materia = state.materias.find((item) => Number(item.id) === Number(materiaId));
+          return dataClient.create(docenteCursoTable, {
+            docente_id: docenteId,
+            curso_id: Number(materia?.curso_id),
+            materia_id: materiaId,
+            estado: "activo",
+          });
+        }),
       ]);
       notify("Asignaciones guardadas.", "success");
       form.reset();
@@ -206,7 +206,15 @@ export function createAsignacionesModule({ notify, onChange }) {
     if (!confirm("Eliminar esta asignacion?")) return;
     try {
       setStatus("Eliminando...", "loading");
-      await dataClient.remove(table, id);
+      await dataClient.request(table, {
+        method: "PATCH",
+        params: { id: `eq.${id}` },
+        body: {
+          estado: "inactivo",
+          deleted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      });
       notify("Asignacion eliminada.", "success");
       await refresh();
       onChange?.();
@@ -229,18 +237,23 @@ export function createAsignacionesModule({ notify, onChange }) {
   async function refresh() {
     try {
       setStatus("Cargando...", "loading");
-      const [profesores, cursos, materias, docenteCurso, docenteMateria] = await Promise.all([
+      const [profesores, cursos, materias, docenteCurso] = await Promise.all([
         profesoresApi.list(),
         cursosApi.list(),
         materiasApi.list(),
-        dataClient.list(docenteCursoTable),
-        dataClient.list(docenteMateriaTable),
+        dataClient.request(docenteCursoTable, {
+          params: {
+            select: "id,docente_id,curso_id,materia_id,estado,deleted_at",
+            deleted_at: "is.null",
+            estado: "eq.activo",
+            order: "id.desc",
+          },
+        }),
       ]);
       state.profesores = profesores;
       state.cursos = cursos;
       state.materias = materias;
       state.docenteCurso = docenteCurso;
-      state.docenteMateria = docenteMateria;
       render();
       setStatus("Datos actualizados", "success");
       return allAssignments();

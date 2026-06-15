@@ -1,10 +1,11 @@
-import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-5";
+import { createTableEnhancer } from "./tableEnhancer.js?v=20260614-7";
 
 export function createCrudModule(options) {
   const state = {
     rows: [],
     editing: null,
     loading: false,
+    fieldOptions: {},
   };
 
   const root = document.getElementById(options.rootId);
@@ -18,6 +19,11 @@ export function createCrudModule(options) {
   function emptyValue(field) {
     if (field.type === "select") return field.options?.[0]?.value ?? "";
     return "";
+  }
+
+  function choicesFor(field) {
+    if (Array.isArray(field.options)) return field.options;
+    return state.fieldOptions[field.name] || [];
   }
 
   function fieldMarkup(field) {
@@ -34,7 +40,7 @@ export function createCrudModule(options) {
     }
 
     if (field.type === "select") {
-      const choices = field.options || [];
+      const choices = choicesFor(field);
       return `
         <label class="field">
           <span>${field.label}</span>
@@ -157,7 +163,7 @@ export function createCrudModule(options) {
     options.fields.forEach((field) => {
       const value = new FormData(form).get(field.name);
       if (value === "" && !field.keepEmpty) return;
-      payload[field.name] = field.type === "number" ? Number(value) : value;
+      payload[field.name] = field.type === "number" || field.valueType === "number" ? Number(value) : value;
     });
     return payload;
   }
@@ -234,9 +240,13 @@ export function createCrudModule(options) {
   }
 
   function init() {
-    renderShell();
-    bindEvents();
-    return refresh();
+    return Promise.resolve(options.loadFieldOptions?.())
+      .then((fieldOptions) => {
+        state.fieldOptions = fieldOptions || {};
+        renderShell();
+        bindEvents();
+        return refresh();
+      });
   }
 
   return {

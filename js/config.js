@@ -1,9 +1,9 @@
 window.ALEGRIAPP_CONFIG = {
-  dataMode: "demo",
+  dataMode: "supabase",
 
   supabase: {
-    url: "",
-    anonKey: "",
+    url: "https://nqtobrslyrfwcuexffdu.supabase.co",
+    anonKey: "sb_publishable_U9D3f7hGVUvU1PbG7auJMA_lMZUPoSh",
   },
 
   rest: {
@@ -11,10 +11,13 @@ window.ALEGRIAPP_CONFIG = {
   },
 
   tables: {
-    profesores: "docentes",
+    profesores: "usuarios",
+    roles: "roles",
+    personalAutorizado: "personal_autorizado",
     cursos: "cursos",
     materias: "materias",
     docenteCurso: "docente_curso",
-    docenteMateria: "docente_materia",
+    nivelesAcademicos: "niveles_academicos",
+    periodosAcademicos: "periodos_academicos",
   },
 };

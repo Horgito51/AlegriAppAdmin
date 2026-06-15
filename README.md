@@ -26,38 +26,22 @@ El proyecto Android `AlegriAppProyecto` usa:
 - `SUPABASE_URL` y `SUPABASE_KEY` desde `local.properties`.
 - Tablas remotas como `cursos`, `materias`, `usuarios`, `docente_curso`, `periodos_academicos`, `configuracion_telegram`, `estudiantes` e `incidentes`.
 
-Como `local.properties` no debe publicarse y Room no es accesible desde GitHub Pages, el panel queda en modo demo con `localStorage` por defecto. La capa `js/api/client.js` permite cambiar despues a Supabase o a una API REST.
+Room no es accesible desde GitHub Pages, asi que el panel se conecta directamente a Supabase por PostgREST usando la publishable key del proyecto. La capa `js/api/client.js` mantiene el modo demo como respaldo, pero `js/config.js` queda configurado en modo `supabase`.
 
 ## Configuracion
 
-El archivo activo es `js/config.js`. No contiene secretos; por defecto usa:
+El archivo activo es `js/config.js`. Usa la URL real de Supabase y una publishable key:
 
 ```js
-dataMode: "demo"
+dataMode: "supabase"
 ```
 
-Para usar Supabase desde GitHub Pages, configura una llave publica/anon segura y reglas RLS adecuadas:
+Las tablas usadas por el panel son las mismas del proyecto Kotlin:
 
-```js
-window.ALEGRIAPP_CONFIG = {
-  dataMode: "supabase",
-  supabase: {
-    url: "https://TU-PROYECTO.supabase.co",
-    anonKey: "TU_ANON_KEY_PUBLICA"
-  }
-};
-```
-
-Para usar una API REST propia:
-
-```js
-window.ALEGRIAPP_CONFIG = {
-  dataMode: "rest",
-  rest: {
-    baseUrl: "https://tu-api.com/api"
-  }
-};
-```
+- Profesores: `usuarios` con rol docente y cedula en `personal_autorizado`.
+- Cursos: `cursos`, `niveles_academicos`, `periodos_academicos`.
+- Materias: `materias`.
+- Asignaciones: `docente_curso`.
 
 ## Probar localmente
 
@@ -78,6 +62,6 @@ Luego abrir `http://localhost:5500`.
 
 ## Notas de seguridad
 
-- No copiar tokens privados de Telegram ni llaves de servicio Supabase al frontend.
+- No copiar tokens privados ni llaves `service_role` de Supabase al frontend.
 - GitHub Pages no puede conectarse directamente a Room porque Room vive dentro de Android.
 - Si se usa Supabase real, revisar RLS antes de permitir INSERT, UPDATE o DELETE desde una app publica.
