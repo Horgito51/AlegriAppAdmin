@@ -22,6 +22,10 @@ function normalizeLower(value) {
   return normalizeText(value).toLowerCase();
 }
 
+function normalizeSearchText(value) {
+  return normalizeLower(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 function readStorage(storage, key, fallback) {
   try {
     const value = storage.getItem(key);
@@ -117,16 +121,41 @@ export function createEstudiantesModule({ notify, onChange }) {
 
   function representativePickerOptions() {
     const selectedIds = new Set(currentRepresentativeDraft().map((item) => String(item.representante_id)));
-    const search = normalizeLower(state.representativeSearch);
+    const search = normalizeSearchText(state.representativeSearch);
 
     return (Array.isArray(state.catalogs.representantes) ? state.catalogs.representantes : [])
       .filter((rep) => !selectedIds.has(String(rep.id)))
       .filter((rep) => {
         if (!search) return true;
         return [rep.nombre, rep.nombre_completo, rep.cedula, rep.telefono, rep.email].some((value) =>
-          String(value || "").toLowerCase().includes(search)
+          normalizeSearchText(value).includes(search)
         );
       });
+  }
+
+  function representativePickerMarkup(selectedValue = "") {
+    const availableRepresentatives = representativePickerOptions();
+    return `
+      <option value="">Seleccione un representante</option>
+      ${availableRepresentatives
+        .map(
+          (rep) =>
+            `<option value="${rep.id}" ${String(rep.id) === String(selectedValue) ? "selected" : ""}>${escapeHtml(`${rep.nombre_completo || rep.nombre}${rep.cedula ? ` - ${rep.cedula}` : ""}`)}</option>`
+        )
+        .join("")}
+    `;
+  }
+
+  function renderRepresentativePicker() {
+    const picker = root.querySelector("[data-representative-picker]");
+    if (!picker) return;
+
+    const currentValue = picker.value || "";
+    picker.innerHTML = representativePickerMarkup(currentValue);
+
+    if (currentValue && !picker.value) {
+      picker.value = "";
+    }
   }
 
   function selectedRepresentativesMarkup() {
@@ -186,8 +215,6 @@ export function createEstudiantesModule({ notify, onChange }) {
       .join("");
 
     const values = state.editing || state.draft || {};
-    const availableRepresentatives = representativePickerOptions();
-
     root.innerHTML = `
       <div class="module-header">
         <div>
@@ -342,13 +369,7 @@ export function createEstudiantesModule({ notify, onChange }) {
               <label class="field compact-field">
                 <span>Resultado</span>
                 <select data-representative-picker>
-                  <option value="">Seleccione un representante</option>
-                  ${availableRepresentatives
-                    .map(
-                      (rep) =>
-                        `<option value="${rep.id}">${escapeHtml(`${rep.nombre_completo || rep.nombre}${rep.cedula ? ` - ${rep.cedula}` : ""}`)}</option>`
-                    )
-                    .join("")}
+                  ${representativePickerMarkup()}
                 </select>
               </label>
 
@@ -740,7 +761,7 @@ export function createEstudiantesModule({ notify, onChange }) {
 
     root.querySelector("[data-representative-search]")?.addEventListener("input", (event) => {
       state.representativeSearch = event.target.value || "";
-      rerenderModal();
+      renderRepresentativePicker();
     });
   }
 
